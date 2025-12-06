@@ -1,0 +1,28 @@
+# Core Framework
+Django==5.0.9
+djangorestframework==3.15.2
+
+# Database
+mysqlclient==2.2.4
+
+# Environment variables management
+python-decouple==3.8
+
+# CORS headers for microservice communication
+django-cors-headers==4.3.1
+
+# API documentation
+drf-spectacular==0.27.2
+
+# Validation
+django-filter==24.3
+
+# Health check for microservices
+django-health-check==3.18.3
+
+# Gunicorn for production
+gunicorn==22.0.0
+
+# Testing
+pytest==8.3.2
+pytest-django==4.8.0
