@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign In</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; }
+        form { max-width: 360px; display: grid; gap: 0.75rem; }
+        label { font-weight: 600; }
+        input { padding: 0.5rem; font-size: 1rem; }
+        .error { color: #b00020; margin-bottom: 0.5rem; }
+        button { padding: 0.6rem 1rem; font-size: 1rem; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Sign In</h1>
+
+    {% if form.non_field_errors %}
+        <div class="error">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+
+        <div>
+            <label for="{{ form.username.id_for_label }}">Username</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+                <div class="error">{{ form.username.errors|striptags }}</div>
+            {% endif %}
+        </div>
+
+        <div>
+            <label for="{{ form.password.id_for_label }}">Password</label>
+            {{ form.password }}
+            {% if form.password.errors %}
+                <div class="error">{{ form.password.errors|striptags }}</div>
+            {% endif %}
+        </div>
+
+        {% if next %}
+            <input type="hidden" name="next" value="{{ next }}">
+        {% endif %}
+
+        <button type="submit">Sign In</button>
+    </form>
+
+    <p><a href="{% url 'password_reset' %}">Forgot your password?</a></p>
+</body>
+</html>

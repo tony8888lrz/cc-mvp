@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Profiles Demo</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #111827;
+            --accent: #38bdf8;
+            --text: #e5e7eb;
+            --muted: #94a3b8;
+            --danger: #f43f5e;
+            --success: #34d399;
+            --border: #1f2937;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: "Inter", system-ui, -apple-system, sans-serif;
+            background: radial-gradient(circle at 20% 20%, #0b1224, #0f172a 45%), radial-gradient(circle at 80% 0%, #0b172a, #0f172a 50%);
+            color: var(--text);
+        }
+        header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .title {
+            margin: 0;
+            font-size: 1.25rem;
+            letter-spacing: 0.5px;
+        }
+        main {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1.25rem;
+            padding: 1.5rem 2rem 2.5rem;
+        }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.25rem 1.25rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+        }
+        h2 {
+            margin: 0 0 0.75rem;
+            font-size: 1rem;
+            color: var(--text);
+        }
+        form {
+            display: grid;
+            gap: 0.75rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.25rem;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 0.55rem 0.65rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: #0b1220;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+        button {
+            border: none;
+            border-radius: 8px;
+            padding: 0.6rem 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: #0f172a;
+            background: var(--accent);
+            transition: transform 0.1s ease, filter 0.15s ease;
+        }
+        button:hover { filter: brightness(1.05); }
+        button:active { transform: translateY(1px); }
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .danger { background: var(--danger); color: #0f172a; }
+        .ghost {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .list {
+            display: grid;
+            gap: 0.75rem;
+        }
+        .row {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.75rem 0.85rem;
+            background: #0b1220;
+            display: grid;
+            gap: 0.35rem;
+        }
+        .row-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .badge {
+            padding: 0.2rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            border: 1px solid var(--border);
+            color: var(--muted);
+        }
+        .badge.active { border-color: var(--success); color: var(--success); }
+        .muted { color: var(--muted); font-size: 0.9rem; }
+        .inline {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .toast {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: #0b1220;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.8rem 1rem;
+            color: var(--text);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <form style="display:none">{% csrf_token %}</form>
+    <header>
+        <h1 class="title">User Profiles Dashboard</h1>
+        <div class="inline">
+            <button class="ghost" type="button" onclick="refreshList()">Refresh</button>
+            <button class="ghost" type="button" onclick="loadActive()">Active only</button>
+        </div>
+    </header>
+    <main>
+        <section class="card">
+            <h2>Create / Update</h2>
+            <form id="profile-form">
+                <input type="hidden" id="profile-id">
+                <div>
+                    <label>Email</label>
+                    <input id="email" type="email" required>
+                </div>
+                <div class="inline">
+                    <div style="flex:1">
+                        <label>First name</label>
+                        <input id="first_name" required>
+                    </div>
+                    <div style="flex:1">
+                        <label>Last name</label>
+                        <input id="last_name" required>
+                    </div>
+                </div>
+                <div class="inline">
+                    <div style="flex:1">
+                        <label>City</label>
+                        <input id="city">
+                    </div>
+                    <div style="flex:1">
+                        <label>State</label>
+                        <input id="state">
+                    </div>
+                    <div style="flex:1">
+                        <label>Country</label>
+                        <input id="country" value="USA">
+                    </div>
+                </div>
+                <div class="actions">
+                    <button type="submit">Save</button>
+                    <button class="ghost" type="button" onclick="clearForm()">Clear</button>
+                </div>
+            </form>
+            <hr style="border:1px solid var(--border); margin:1rem 0;">
+            <h2>Search by email</h2>
+            <form id="search-form">
+                <div class="inline">
+                    <input id="search-email" type="email" placeholder="user@example.com" style="flex:1">
+                    <button type="submit">Search</button>
+                </div>
+            </form>
+        </section>
+        <section class="card">
+            <h2>Profiles</h2>
+            <div id="list" class="list"></div>
+        </section>
+    </main>
+    <div id="toast" class="toast"></div>
+<script>
+const apiBase = "/api/v1/profiles/";
+
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(";").shift();
+}
+function csrf() { return getCookie("csrftoken"); }
+
+function showToast(msg, isError=false) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.style.display = "block";
+    el.style.borderColor = isError ? "var(--danger)" : "var(--border)";
+    setTimeout(() => { el.style.display = "none"; }, 2500);
+}
+
+async function request(url, options={}) {
+    const opts = {
+        headers: {
+            "Content-Type": "application/json",
+            ...(options.method && options.method !== "GET" ? {"X-CSRFToken": csrf()} : {})
+        },
+        ...options
+    };
+    const resp = await fetch(url, opts);
+    const isJson = resp.headers.get("content-type")?.includes("application/json");
+    let data = null;
+    if (resp.status !== 204) {
+        data = isJson ? await resp.json() : await resp.text();
+    }
+    if (!resp.ok) {
+        throw new Error(isJson && data ? JSON.stringify(data) : (data || resp.statusText));
+    }
+    return data;
+}
+
+async function refreshList() {
+    try {
+        const data = await request(apiBase);
+        renderList(data.results || data);
+    } catch (e) {
+        showToast("List error: " + e.message, true);
+    }
+}
+
+async function loadActive() {
+    try {
+        const data = await request(apiBase + "active/");
+        renderList(data.results || data);
+    } catch (e) {
+        showToast("Active error: " + e.message, true);
+    }
+}
+
+function renderList(items=[]) {
+    profileCache.clear();
+    (items || []).forEach(item => {
+        if (item && item.id !== undefined) profileCache.set(Number(item.id), item);
+    });
+    const list = document.getElementById("list");
+    if (!items.length) {
+        list.innerHTML = '<div class="muted">No profiles.</div>';
+        return;
+    }
+    list.innerHTML = items.map(item => {
+        const address = [item.city, item.state, item.country || "USA"].filter(Boolean).join(", ");
+        return `
+            <div class="row" data-id="${item.id}">
+                <div class="row-header">
+                    <div>
+                        <div><strong>${item.full_name || ""}</strong></div>
+                        <div class="muted">${item.email}</div>
+                    </div>
+                    <span class="badge ${item.is_active ? 'active' : ''}">${item.is_active ? 'Active' : 'Inactive'}</span>
+                </div>
+                <div class="muted">${address || 'No address'}</div>
+                <div class="actions">
+                    <button class="ghost" data-action="edit" data-id="${item.id}">Edit</button>
+                    <button class="danger" data-action="delete" data-id="${item.id}">Soft delete</button>
+                    <button class="ghost" data-action="reactivate" data-id="${item.id}">Reactivate</button>
+                </div>
+            </div>
+        `;
+    }).join("");
+}
+
+const profileCache = new Map();
+
+function fillForm(id) {
+    const data = profileCache.get(id);
+    if (!data) return;
+    document.getElementById("profile-id").value = id;
+    for (const key of ["email","first_name","last_name","city","state","country"]) {
+        if (data[key] !== undefined) document.getElementById(key).value = data[key] || "";
+    }
+    showToast("Loaded into form");
+}
+
+function clearForm() {
+    document.getElementById("profile-id").value = "";
+    for (const key of ["email","first_name","last_name","city","state","country"]) {
+        document.getElementById(key).value = key === "country" ? "USA" : "";
+    }
+}
+
+async function handleSave(e) {
+    e.preventDefault();
+    const id = document.getElementById("profile-id").value;
+    const payload = {
+        email: document.getElementById("email").value,
+        first_name: document.getElementById("first_name").value,
+        last_name: document.getElementById("last_name").value,
+        city: document.getElementById("city").value,
+        state: document.getElementById("state").value,
+        country: document.getElementById("country").value || "USA",
+    };
+    try {
+        if (id) {
+            await request(apiBase + id + "/", { method: "PATCH", body: JSON.stringify(payload) });
+            showToast("Updated profile");
+        } else {
+            await request(apiBase, { method: "POST", body: JSON.stringify(payload) });
+            showToast("Created profile");
+        }
+        clearForm();
+        refreshList();
+    } catch (e) {
+        showToast("Save error: " + e.message, true);
+    }
+}
+
+async function softDelete(id) {
+    try {
+        await request(apiBase + id + "/", { method: "DELETE" });
+        showToast("Soft deleted");
+        refreshList();
+    } catch (e) {
+        showToast("Delete error: " + e.message, true);
+    }
+}
+
+async function reactivate(id) {
+    try {
+        await request(apiBase + id + "/reactivate/", { method: "POST" });
+        showToast("Reactivated");
+        refreshList();
+    } catch (e) {
+        showToast("Reactivate error: " + e.message, true);
+    }
+}
+
+async function searchByEmail(e) {
+    e.preventDefault();
+    const email = document.getElementById("search-email").value;
+    if (!email) return;
+    try {
+        const data = await request(apiBase + "search_by_email/?email=" + encodeURIComponent(email));
+        renderList([data]);
+    } catch (e) {
+        showToast("Search error: " + e.message, true);
+    }
+}
+
+document.getElementById("list").addEventListener("click", (e) => {
+    const action = e.target.dataset.action;
+    const id = Number(e.target.dataset.id);
+    if (!action || !id) return;
+    if (action === "edit") fillForm(id);
+    if (action === "delete") softDelete(id);
+    if (action === "reactivate") reactivate(id);
+});
+
+document.getElementById("profile-form").addEventListener("submit", handleSave);
+document.getElementById("search-form").addEventListener("submit", searchByEmail);
+
+refreshList();
+</script>
+</body>
+</html>
