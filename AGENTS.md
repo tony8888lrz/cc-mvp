@@ -19,6 +19,12 @@ make docker-down   # stop containers
 pytest --cov=apps  # run tests with coverage
 ```
 
+## Docker Workflow (compose v2)
+- Build & start stack: `docker compose up -d --build` (replaces `docker-compose up -d`)
+- Run migrations inside web container (uses DB host `db`): `docker compose exec web python manage.py migrate`
+- View logs: `docker compose logs -f web` (or `db`)
+- Stop stack: `docker compose down`
+
 ## Coding Style & Naming Conventions
 - Python 3.12, PEP 8; 4-space indents, explicit imports, DRY helpers over inline duplication.
 - Follow DRF roles: serializers validate/shape data, viewsets orchestrate, models stay lean.
