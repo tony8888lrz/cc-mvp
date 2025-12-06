@@ -7,6 +7,9 @@ from django.views.generic import TemplateView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 urlpatterns = [
+    # Metrics endpoint for Prometheus
+    path('', include('django_prometheus.urls')),
+
     # Admin interface
     path('admin/', admin.site.urls),
 
